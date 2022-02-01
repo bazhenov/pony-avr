@@ -1,3 +1,4 @@
+.PHONY = avr-gdb
 CC = gcc
 CFLAGS = -Wall -pedantic -lsimavr
 
@@ -14,3 +15,12 @@ compile_flags.txt:
 	echo "-I/usr/avr/include" >> $@
 	echo "-D__AVR_ATtiny85__" >> $@
 	echo "$(AVR_CFLAGS)" >> $@
+
+firmware.elf: firmware.c
+	$(AVR_CC) $(AVR_CFLAGS) -g -o $@ $<
+
+avr-gdb: firmware.elf
+	avr-gdb $< \
+		-ex 'target remote :1234'\
+		-ex 'break main'\
+		-ex 'cont'
