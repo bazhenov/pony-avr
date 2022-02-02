@@ -11,7 +11,24 @@ void __attribute__((noinline)) toggle(bool on) {
   }
 }
 
+#define MAX_TASKS 3
+uint8_t tasks_left = MAX_TASKS;
+void *stacks[MAX_TASKS];
+
+void __attribute__((noinline))
+task_create(void (*callable)(void), uint16_t stack_size) {
+  // Getting address of a stack
+  uint16_t *stack = (uint16_t *)((SPH << 8) | SPL);
+  // Moving to a previous stack position
+  stack++;
+  // Replacing return address on a stack
+  *stack = (uint16_t *)callable;
+}
+
+void task1(void) {}
+
 int main(void) {
+  task_create(&task1, 100);
   DDRB = 0xFF;
   for (;;) {
     toggle(true);
