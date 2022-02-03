@@ -30,7 +30,7 @@ task_create(void (*callable)(void), uint8_t stack_size) {
   uint8_t task_idx = --tasks_left;
 
   task_stack_pointer -= sizeof(uintptr_t) - 1;
-  uintptr_t ret_address = (uintptr_t)callable;
+  uintptr_t ret_address = (uintptr_t)callable; // NOLINT
   ret_address = (ret_address >> 8) | (ret_address << 8);
   *(uintptr_t *)task_stack_pointer = ret_address;
   
@@ -51,7 +51,7 @@ void __attribute__((noinline)) task_yield(void) {
     current_task_idx = 0;
   }
   uint8_t task_idx = current_task_idx++;
-  stack_pointer = (uintptr_t)stacks[task_idx];
+  stack_pointer = (uintptr_t)stacks[task_idx]; // NOLINT
   SPH = stack_pointer >> 8;
   SPL = stack_pointer & 0xFF;
 }
