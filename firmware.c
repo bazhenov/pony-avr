@@ -36,11 +36,6 @@ task_create(void (*callable)(void), uint8_t stack_size) {
   
   task_stack_pointer--;
   stacks[task_idx] = task_stack_pointer;
-
-  // Moving to a previous stack position
-  // stack++;
-  // *stack = (uint16_t *)callable; // NOLINT
-  // *stack = (uint16_t *)callable; // NOLINT
 }
 
 uintptr_t stack_pointer;
