@@ -57,12 +57,14 @@ void __attribute__((noinline)) run_scheduler(void) {
 
 void task1(void) {
   for (;;) {
+    toggle(1);
     task_yield();
   }
 }
 
 void task2(void) {
   for (;;) {
+    toggle(0);
     task_yield();
   }
 }
