@@ -18,11 +18,11 @@ void *stacks[MAX_TASKS];
 void __attribute__((noinline))
 task_create(void (*callable)(void), uint16_t stack_size) {
   // Getting address of a stack
-  uint16_t *stack = (uint16_t *)((SPH << 8) | SPL);
+  uint16_t *stack = (uint16_t *)((SPH << 8) | SPL); // NOLINT
   // Moving to a previous stack position
   stack++;
   // Replacing return address on a stack
-  *stack = (uint16_t *)callable;
+  *stack = (uint16_t *)callable; // NOLINT
 }
 
 void task1(void) {}
