@@ -25,5 +25,9 @@ run: main firmware.elf
 avr-gdb: firmware.elf
 	avr-gdb $< \
 		-ex 'target remote :1234'\
-		-ex 'break main'\
-		-ex 'cont'
+		-ex 'break task_create'\
+		-ex 'break task_yield'\
+		-ex 'cont'\
+		-ex 'cont'\
+		-ex 'x /2xh $$SP+1'\
+		-ex 'x /4xb $$SP+1'
