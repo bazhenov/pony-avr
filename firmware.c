@@ -17,15 +17,13 @@ void *stacks[MAX_TASKS];
 void *stack_allocator = (void *)RAMEND;
 uint8_t current_task_idx = 0;
 
-void *task_stack_pointer;
-
 void __attribute__((noinline))
 task_create(void (*callable)(void), uint8_t stack_size) {
   if (tasks_left == 0) {
     return;
   }
   // Getting address of a stack
-  task_stack_pointer = stack_allocator;
+  void *task_stack_pointer = stack_allocator;
   stack_allocator -= stack_size;
   uint8_t task_idx = --tasks_left;
 
@@ -33,12 +31,9 @@ task_create(void (*callable)(void), uint8_t stack_size) {
   uintptr_t ret_address = (uintptr_t)callable; // NOLINT
   ret_address = (ret_address >> 8) | (ret_address << 8);
   *(uintptr_t *)task_stack_pointer = ret_address;
-  
   task_stack_pointer--;
   stacks[task_idx] = task_stack_pointer;
 }
-
-uintptr_t stack_pointer;
 
 void __attribute__((noinline)) task_yield(void) {
   // context switch to next task
@@ -46,7 +41,7 @@ void __attribute__((noinline)) task_yield(void) {
     current_task_idx = 0;
   }
   uint8_t task_idx = current_task_idx++;
-  stack_pointer = (uintptr_t)stacks[task_idx]; // NOLINT
+  uintptr_t stack_pointer = (uintptr_t)stacks[task_idx]; // NOLINT
   SPH = stack_pointer >> 8;
   SPL = stack_pointer & 0xFF;
 }
