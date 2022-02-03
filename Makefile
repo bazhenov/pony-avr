@@ -6,7 +6,7 @@ F_CPU = 16000000
 MCU = atmega328p
 
 AVR_CC = avr-gcc
-AVR_CFLAGS = -DF_CPU=$(F_CPU) -mmcu=$(MCU) -O2
+AVR_CFLAGS = -DF_CPU=$(F_CPU) -mmcu=$(MCU) -O3 -Wall -Wpedantic
 
 main: main.c
 	$(CC) $(CFLAGS) -o $@ $<
