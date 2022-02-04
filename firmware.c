@@ -28,7 +28,7 @@ void *stack_allocator = (void *)RAMEND - 100;
 uint8_t current_task_idx = NO_TASK;
 
 // Swaps the byte order in 2 byte integer
-#define SWAP_ORRED(x) ((x >> 8) | (x << 8))
+#define SWAP_ORDER(x) ((x >> 8) | (x << 8))
 
 void task_yield(void);
 
@@ -59,9 +59,9 @@ task_create(void (*callable)(void), uint8_t stack_size) {
   // task_finished callback
   // task callable address
   task_SP -= sizeof(uintptr_t) - 1;
-  *(uintptr_t *)task_SP = SWAP_ORRED((uintptr_t)task_finished);
+  *(uintptr_t *)task_SP = SWAP_ORDER((uintptr_t)task_finished);
   task_SP -= 2;
-  *(uintptr_t *)task_SP = SWAP_ORRED((uintptr_t)callable);
+  *(uintptr_t *)task_SP = SWAP_ORDER((uintptr_t)callable);
   task_SP -= 1;
 
   task->sp = task_SP;
