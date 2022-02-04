@@ -27,4 +27,10 @@ avr-gdb: firmware.elf
 		-ex 'target remote :1234'\
 		-ex 'rbreak toggle.*'\
 		-ex 'break main'\
-		-ex 'cont'
+		-ex 'break task_yield'\
+		-ex 'cont'\
+		-ex 'next'\
+		-ex 'next'\
+		-ex 'x /4xb tasks[0].sp + 1'\
+		-ex 'x /4xb tasks[1].sp + 1'\
+		-ex 'x /4xb $$SP + 1'
