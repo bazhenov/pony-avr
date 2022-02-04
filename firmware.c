@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <util/delay.h>
 
+void test(void);
+
 void __attribute__((noinline)) toggle(bool on) {
   if (on) {
     PORTB = 0xFF;
@@ -118,7 +120,6 @@ void task1(void) {
     task_yield();
   }
 }
-
 void task2(void) {
   for (;;) {
     toggle(0);
@@ -127,6 +128,7 @@ void task2(void) {
 }
 
 int main(void) {
+  test();
   task_create(&task1, 100);
   task_create(&task2, 100);
   run_scheduler();

@@ -16,8 +16,8 @@ compile_flags.txt:
 	echo "-D__AVR_ATtiny85__" >> $@
 	echo "$(AVR_CFLAGS)" >> $@
 
-firmware.elf: firmware.c
-	$(AVR_CC) $(AVR_CFLAGS) -g -o $@ $<
+firmware.elf: firmware.c pony.S
+	$(AVR_CC) $(AVR_CFLAGS) -g -o $@ $^
 
 run: main firmware.elf
 	./main firmware.elf
