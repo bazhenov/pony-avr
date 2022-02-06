@@ -4,5 +4,6 @@
   .global test
 
 test:
-  ldi r16, 0x03
+  ldi r16, 0x0F
+  out _SFR_IO_ADDR(PORTB), r16
   ret
