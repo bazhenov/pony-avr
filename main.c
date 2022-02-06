@@ -1,8 +1,13 @@
+#include <simavr/avr_ioport.h>
 #include <simavr/sim_avr.h>
 #include <simavr/sim_elf.h>
 #include <simavr/sim_gdb.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+void pin_changed_hook(struct avr_irq_t *irq, uint32_t value, void *param) {
+  printf("PB%d [%d]\n", irq->irq, value);
+}
 
 int main(int argc, char **argv) {
   elf_firmware_t firmware;
@@ -23,6 +28,10 @@ int main(int argc, char **argv) {
     printf("Running AVR core...\n");
     avr_init(avr);
     avr_load_firmware(avr, &firmware);
+
+    avr_irq_register_notify(
+        avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('B'), IOPORT_IRQ_PIN_ALL),
+        pin_changed_hook, NULL);
 
     avr->gdb_port = 1234;
     avr->state = cpu_Stopped;
