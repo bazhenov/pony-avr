@@ -128,6 +128,7 @@ void task2(void) {
 }
 
 int main(void) {
+  DDRB = 0xFF;
   test();
   task_create(&task1, 100);
   task_create(&task2, 100);
