@@ -72,7 +72,7 @@ task_create(void (*callable)(void), uint8_t stack_size) {
 
 uint8_t find_next_task() {
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
-    uint8_t task_id = (current_task_idx + i) % MAX_TASKS;
+    uint8_t task_id = (current_task_idx + 1 + i) % MAX_TASKS;
     if (tasks[task_id].flags & TASK_ACTIVE) {
       return task_id;
     }
