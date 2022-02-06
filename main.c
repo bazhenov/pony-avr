@@ -4,6 +4,8 @@
 #include <simavr/sim_gdb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 void pin_changed_hook(struct avr_irq_t *irq, uint32_t value, void *param) {
   printf("PB%d [%d]\n", irq->irq, value);
@@ -12,7 +14,13 @@ void pin_changed_hook(struct avr_irq_t *irq, uint32_t value, void *param) {
 int main(int argc, char **argv) {
   elf_firmware_t firmware;
 
-  char *file_name = argv[1];
+  argv++;
+  char *file_name = *argv++;
+
+  bool gdb_enabled = false;
+  if (argc > 2 && strcmp(*argv, "-g") == 0) {
+    gdb_enabled = true;
+  }
 
   elf_read_firmware(file_name, &firmware);
 
@@ -25,7 +33,6 @@ int main(int argc, char **argv) {
       fprintf(stderr, "[ERROR] Unable to create AVR core\n");
       exit(1);
     }
-    printf("Running AVR core...\n");
     avr_init(avr);
     avr_load_firmware(avr, &firmware);
 
@@ -33,15 +40,21 @@ int main(int argc, char **argv) {
         avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('B'), IOPORT_IRQ_PIN_ALL),
         pin_changed_hook, NULL);
 
-    avr->gdb_port = 1234;
-    avr->state = cpu_Stopped;
-    avr_gdb_init(avr);
+    if (gdb_enabled) {
+      avr->gdb_port = 1234;
+      avr->state = cpu_Stopped;
+      avr_gdb_init(avr);
+    }
 
+    printf("Running AVR core...\n");
     int status = cpu_Running;
     while ((status != cpu_Crashed) && (status != cpu_Done)) {
       status = avr_run(avr);
     }
-    avr_deinit_gdb(avr);
+
+    if (gdb_enabled) {
+      avr_deinit_gdb(avr);
+    }
   }
   return 0;
 }
