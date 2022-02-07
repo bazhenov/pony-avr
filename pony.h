@@ -6,9 +6,15 @@ typedef struct {
   // stack pointer of a task
   void *sp;
   uint8_t flags;
+  void (*f)(void);
 } task_info;
 
+// Task is allocated and can be run by a scheduler
 #define TASK_ACTIVE 1
+
+// Task has been already initialialized by a scheduler
+#define TASK_INITIALIZED 2
+
 #define MAX_TASKS 2
 #define NO_TASK 0xFF
 
