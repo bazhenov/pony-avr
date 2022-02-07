@@ -5,7 +5,8 @@
 			"label": "make run",
 			"command": "make",
 			"args": [
-				"run"
+				"run",
+				"-B"
 			],
 			"group": {
 				"kind": "build",
