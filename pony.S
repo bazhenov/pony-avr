@@ -4,7 +4,7 @@
   .global test
 
 test:
-  ldi r16, 0x0F
+  ldi r16, 0xFF
   out _SFR_IO_ADDR(PORTB), r16
 
   lds r17, current_task_idx

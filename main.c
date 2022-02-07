@@ -8,7 +8,29 @@
 #include <string.h>
 
 void pin_changed_hook(struct avr_irq_t *irq, uint32_t value, void *param) {
-  printf("PB%d [%d]\n", irq->irq, value);
+  static bool header_printed = false;
+  if (!header_printed) {
+    printf("    T1 T2 T3 T4\n");
+    header_printed = true;
+  }
+  switch (value) {
+    case 1:
+      printf("    --\n");
+      break;
+    case 2:
+      printf("       --\n");
+      break;
+    case 3:
+      printf("          --\n");
+      break;
+    case 4:
+      printf("             --\n");
+      break;
+
+    default:
+      //printf("PB%d [%d]\n", irq->irq, value);
+      break;
+  }
 }
 
 int main(int argc, char **argv) {
