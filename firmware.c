@@ -61,9 +61,9 @@ task_create(void (*callable)(void), uint8_t stack_size) {
   // task_finished callback
   // task callable address
   task_SP -= sizeof(uintptr_t) - 1;
-  *(uintptr_t *)task_SP = SWAP_ORDER((uintptr_t)task_finished);
+  *(uintptr_t *)task_SP = SWAP_ORDER((uintptr_t)task_finished); // NOLINT
   task_SP -= 2;
-  *(uintptr_t *)task_SP = SWAP_ORDER((uintptr_t)callable);
+  *(uintptr_t *)task_SP = SWAP_ORDER((uintptr_t)callable); // NOLINT
   task_SP -= 1;
 
   task->sp = task_SP;
@@ -91,7 +91,7 @@ void __attribute__((noinline)) task_yield(void) {
   if (save_sp) {
     // saving task state
     uintptr_t stack_pointer = (uintptr_t)((SPH << 8) | SPL);
-    tasks[current_task_idx].sp = (void *)stack_pointer;
+    tasks[current_task_idx].sp = (void *)stack_pointer; // NOLINT
   }
   uint8_t next_task_id = find_next_task();
   if (next_task_id == NO_TASK) {
