@@ -1,9 +1,12 @@
 #include <avr/io.h>
 #include <avr/sleep.h>
+#include <avr/interrupt.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <util/delay.h>
+
+#include "pony.h"
 
 void test(void);
 
@@ -14,23 +17,6 @@ void __attribute__((noinline)) toggle(bool on) {
     PORTB = 0;
   }
 }
-
-typedef struct {
-  // stack pointer of a task
-  void *sp;
-  uint8_t flags;
-} task_info;
-
-#define TASK_ACTIVE 1
-#define MAX_TASKS 2
-#define NO_TASK 0xFF
-
-task_info tasks[MAX_TASKS];
-void *stack_allocator = (void *)RAMEND - 100;
-uint8_t current_task_idx = NO_TASK;
-
-// Swaps the byte order in 2 byte integer
-#define SWAP_ORDER(x) ((x >> 8) | (x << 8))
 
 void task_yield(void);
 
@@ -70,7 +56,7 @@ task_create(void (*callable)(void), uint8_t stack_size) {
   task->flags |= TASK_ACTIVE;
 }
 
-uint8_t find_next_task() {
+uint8_t __attribute__((always_inline)) find_next_task() {
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
     uint8_t task_id = (current_task_idx + 1 + i) % MAX_TASKS;
     if (tasks[task_id].flags & TASK_ACTIVE) {
@@ -80,36 +66,49 @@ uint8_t find_next_task() {
   return NO_TASK;
 }
 
+void __attribute__((always_inline)) scheduller_halt(void) {
+  for(;;);
+}
+
+void __attribute__((always_inline)) save_cpu_state(void) {
+  // asm("push r16"::);
+  // asm("push r17"::);
+}
+
+void __attribute__((always_inline)) restore_cpu_state(void) {
+  // asm("pop r17"::);
+  // asm("pop r16"::);
+}
+
 void __attribute__((noinline)) task_yield(void) {
   // context switch to next task
-  bool save_sp = true;
   if (current_task_idx == NO_TASK) {
     // First run of task_yield - no need to save context executuion
     current_task_idx = MAX_TASKS;
-    save_sp = false;
-  }
-  if (save_sp) {
-    // saving task state
-    uintptr_t stack_pointer = (uintptr_t)((SPH << 8) | SPL);
-    tasks[current_task_idx].sp = (void *)stack_pointer; // NOLINT
   }
   uint8_t next_task_id = find_next_task();
   if (next_task_id == NO_TASK) {
-    // HALT
-    for (;;)
-      ;
+    scheduller_halt();
+
+  } else if (next_task_id != current_task_idx) {
+    cli();
+
+    // saving current task state
+    save_cpu_state();
+    tasks[current_task_idx].sp = (void *)((SPH << 8) | SPL); // NOLINT
+
+    // restoring next task state
+    current_task_idx = next_task_id;    
+    uintptr_t stack_pointer = (uintptr_t)tasks[current_task_idx].sp; // NOLINT
+    SPH = stack_pointer >> 8;
+    SPL = stack_pointer & 0xFF;
+    restore_cpu_state();
+
+    sei();
   }
-  current_task_idx = next_task_id;
-  uintptr_t stack_pointer = (uintptr_t)tasks[current_task_idx].sp; // NOLINT
-  SPH = stack_pointer >> 8;
-  SPL = stack_pointer & 0xFF;
 }
 
-void task_sleep(uint16_t delay) {
-  // context switch to next task
-}
-
-void __attribute__((noinline)) run_scheduler(void) {
+void run_scheduler(void) {
   // delegating control to the first task
   task_yield();
 }
