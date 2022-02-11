@@ -1,6 +1,6 @@
+#include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/sleep.h>
-#include <avr/interrupt.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -8,11 +8,7 @@
 
 #include "pony.h"
 
-void test(void);
-
-void __attribute__((noinline)) toggle(uint8_t value) {
-  PORTB = value;
-}
+void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }
 
 void task_yield(void);
 
@@ -49,21 +45,28 @@ uint8_t find_next_task() {
 }
 
 void scheduller_halt(void) {
-  for(;;);
+  for (;;)
+    ;
 }
 
+// TODO implement correct way of saving architectural state of AVR core
+// https://gcc.gnu.org/wiki/avr-gcc#Call-Saved_Registers
 void __attribute__((always_inline)) save_cpu_state(void) {
-  asm("push r16"::);
-  asm("push r17"::);
+  asm("push r16" ::);
+  asm("push r17" ::);
+  asm("push r28" ::);
+  asm("push r29" ::);
 }
 
 void __attribute__((always_inline)) restore_cpu_state(void) {
-  asm("pop r17"::);
-  asm("pop r16"::);
+  asm("pop r29" ::);
+  asm("pop r28" ::);
+  asm("pop r17" ::);
+  asm("pop r16" ::);
 }
 
 void __attribute__((noinline)) task_yield(void) {
-  start:
+start:
   // context switch to next task
   uint8_t next_task_id = find_next_task();
   if (next_task_id == NO_TASK) {
@@ -89,46 +92,42 @@ void __attribute__((noinline)) task_yield(void) {
     } else {
       task->flags |= TASK_INITIALIZED;
       task->f();
-      // current_task_idx should be used here. Because the task we are return from
-      // may be not the same task we was delegating to
+      // current_task_idx should be used here. Because the task we are return
+      // from may be not the same task we was delegating to
       tasks[current_task_idx].flags = 0;
       goto start;
     }
   }
 }
 
-void task1(void) {
-  for (uint8_t i = 3; i > 0; i--) {
-    toggle(1);
+void delay_ms(uint16_t ms) {
+  ms <<= 3;
+  for (; ms > 0; ms--) {
+    for (uint8_t j = 0xFF; j > 0; j--)
+      asm("nop" ::);
     task_yield();
   }
 }
+
+void task1(void) {
+  for (;;) {
+    PORTB ^= 1 << PIN5;
+    delay_ms(100);
+  }
+}
+
 void task2(void) {
   for (;;) {
-    toggle(2);
-    task_yield();
+    PORTB ^= 1 << PIN4;
+    delay_ms(500);
   }
-}
-
-void task3(void) {
-  for (uint8_t i = 2; i > 0; i--) {
-    toggle(3);
-    task_yield();
-  }
-}
-
-void task4(void) {
-  toggle(4);
 }
 
 int main(void) {
   DDRB = 0xFF;
-  test();
-  
+
   task_create(&task1, 100);
   task_create(&task2, 100);
-  task_create(&task3, 100);
-  task_create(&task4, 100);
 
   task_yield();
 }
