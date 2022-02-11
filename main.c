@@ -2,9 +2,9 @@
 #include <simavr/sim_avr.h>
 #include <simavr/sim_elf.h>
 #include <simavr/sim_gdb.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 void pin_changed_hook(struct avr_irq_t *irq, uint32_t value, void *param) {
@@ -14,22 +14,22 @@ void pin_changed_hook(struct avr_irq_t *irq, uint32_t value, void *param) {
     header_printed = true;
   }
   switch (value) {
-    case 1:
-      printf("    --\n");
-      break;
-    case 2:
-      printf("       --\n");
-      break;
-    case 3:
-      printf("          --\n");
-      break;
-    case 4:
-      printf("             --\n");
-      break;
+  case 1:
+    printf("    --\n");
+    break;
+  case 2:
+    printf("       --\n");
+    break;
+  case 3:
+    printf("          --\n");
+    break;
+  case 4:
+    printf("             --\n");
+    break;
 
-    default:
-      //printf("PB%d [%d]\n", irq->irq, value);
-      break;
+  default:
+    printf("PB%d [%0X]\n", irq->irq, value);
+    break;
   }
 }
 
