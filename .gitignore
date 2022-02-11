@@ -1,3 +1,4 @@
 /main
 /*.elf
+/*.hex
 /compile_flags.txt
