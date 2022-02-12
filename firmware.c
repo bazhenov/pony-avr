@@ -15,7 +15,7 @@ void task_yield(void);
 void task_create(void (*callable)(void), uint8_t stack_size) {
   task_info *task = NULL;
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
-    if (!(tasks[i].flags & SLOT_OCCUPIED)) {
+    if (tasks[i].f == NULL) {
       task = &tasks[i];
       break;
     }
@@ -30,14 +30,14 @@ void task_create(void (*callable)(void), uint8_t stack_size) {
   stack_allocator -= stack_size;
 
   task->sp = task_SP;
-  task->flags |= SLOT_OCCUPIED;
   task->f = callable;
 }
 
 uint8_t find_next_task() {
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
     uint8_t task_id = (uint8_t)(current_task_idx + 1 + i) % MAX_TASKS;
-    if (tasks[task_id].flags & SLOT_OCCUPIED) {
+    task_info *task = &tasks[task_id];
+    if (task->f != NULL) {
       return task_id;
     }
   }
@@ -114,14 +114,15 @@ start:
     SPH = stack_pointer >> 8;
     SPL = stack_pointer & 0xFF;
 
-    if (task->flags & TASK_INITIALIZED) {
+    if (task->flags & TASK_ACTIVE) {
       restore_cpu_state();
     } else {
-      task->flags |= TASK_INITIALIZED;
+      task->flags |= TASK_ACTIVE;
       task->f();
       // current_task_idx should be used here. Because the task we are return
       // from may be not the same task we was delegating to
       tasks[current_task_idx].flags = 0;
+      tasks[current_task_idx].f = NULL;
       goto start;
     }
   }
