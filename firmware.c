@@ -13,7 +13,7 @@ void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }
 void task_yield(void);
 
 void task_create(void (*callable)(void), uint8_t stack_size) {
-  task_info *task = NULL;
+  volatile task_info *task = NULL;
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
     if (tasks[i].f == NULL) {
       task = &tasks[i];
@@ -34,14 +34,15 @@ void task_create(void (*callable)(void), uint8_t stack_size) {
 }
 
 uint8_t find_next_task() {
-  for (uint8_t i = 0; i < MAX_TASKS; i++) {
-    uint8_t task_id = (uint8_t)(current_task_idx + 1 + i) % MAX_TASKS;
-    task_info *task = &tasks[task_id];
-    if (task->f != NULL) {
-      return task_id;
+  for (;;) {
+    for (uint8_t i = 0; i < MAX_TASKS; i++) {
+      uint8_t task_id = (uint8_t)(current_task_idx + 1 + i) % MAX_TASKS;
+      volatile task_info *task = &tasks[task_id];
+      if (task->f != NULL && task->flags != TASK_SLEEP) {
+        return task_id;
+      }
     }
   }
-  return NO_TASK;
 }
 
 void scheduller_halt(void) {
@@ -96,10 +97,8 @@ void __attribute__((noinline)) task_yield(void) {
   uint8_t next_task_id;
 start:
   next_task_id = find_next_task();
-  if (next_task_id == NO_TASK) {
-    scheduller_halt();
 
-  } else if (next_task_id != current_task_idx) {
+  if (next_task_id != current_task_idx) {
     if (current_task_idx != NO_TASK) {
       // saving current task state
       save_cpu_state();
@@ -107,53 +106,77 @@ start:
     }
 
     // restoring next task state
-    task_info *task = &tasks[next_task_id];
+    volatile task_info *task = &tasks[next_task_id];
     current_task_idx = next_task_id;
 
     uintptr_t stack_pointer = (uintptr_t)task->sp; // NOLINT
     SPH = stack_pointer >> 8;
     SPL = stack_pointer & 0xFF;
 
-    if (task->flags & TASK_ACTIVE) {
-      restore_cpu_state();
-    } else {
-      task->flags |= TASK_ACTIVE;
+    if (task->flags == 0) {
+      // Initial run ad the task
+
+      task->flags = TASK_ACTIVE;
       task->f();
       // current_task_idx should be used here. Because the task we are return
       // from may be not the same task we was delegating to
       tasks[current_task_idx].flags = 0;
       tasks[current_task_idx].f = NULL;
       goto start;
+    } else {
+      // Continuation of the task
+      restore_cpu_state();
     }
   }
 }
 
-void delay_ms(uint16_t ms) {
-  ms <<= 3;
-  for (; ms > 0; ms--) {
-    for (uint8_t j = 0xFF; j > 0; j--)
-      asm("nop" ::);
-    task_yield();
-  }
+void delay_ticks(uint16_t ticks) {
+  volatile task_info *task = &tasks[current_task_idx];
+  task->ticks_to_sleep = ticks;
+  task->flags = TASK_SLEEP;
+  task_yield();
 }
 
 void task1(void) {
   for (;;) {
     PORTB ^= 1 << PIN5;
-    delay_ms(100);
+    delay_ticks(20);
   }
 }
 
 void task2(void) {
   for (;;) {
     PORTB ^= 1 << PIN4;
-    delay_ms(500);
+    delay_ticks(50);
+  }
+}
+
+void setup_timer() {
+  // set up timer with prescaler = 1024
+  TCCR0B |= (1 << CS02) | (1 << CS00);
+  // initialize counter
+  TCNT0 = 0;
+  // enable overflow interrupt
+  TIMSK0 |= (1 << TOIE0);
+  // enable global interrupts
+  sei();
+}
+
+uint32_t ticks = 0;
+ISR(TIMER0_OVF_vect) {
+  ticks++;
+  for (uint8_t i = 0; i < MAX_TASKS; i++) {
+    volatile task_info *task = &tasks[i];
+    if (task->flags == TASK_SLEEP && --task->ticks_to_sleep == 0) {
+      task->flags = TASK_ACTIVE;
+    }
   }
 }
 
 int main(void) {
   DDRB = 0xFF;
 
+  setup_timer();
   task_create(&task1, 100);
   task_create(&task2, 100);
 
