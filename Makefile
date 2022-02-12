@@ -8,6 +8,9 @@ MCU = atmega328p
 AVR_CC = avr-gcc
 AVR_CFLAGS = -DF_CPU=$(F_CPU) -mmcu=$(MCU) -O3 -Wall -Wpedantic
 
+run: main firmware.elf
+	./main firmware.elf
+
 main: main.c
 	$(CC) $(CFLAGS) -o $@ $<
 
@@ -21,9 +24,6 @@ firmware.elf: firmware.c pony.S
 
 %.hex: %.elf
 	avr-objcopy -j .text -j .data -O ihex $< $@
-
-run: main firmware.elf
-	./main firmware.elf
 
 run-debug: main firmware.elf
 	./main firmware.elf -g
