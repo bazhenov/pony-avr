@@ -9,7 +9,7 @@ typedef struct {
   void (*f)(void);
 } task_info;
 
-// Indicates ask is allocated and can be run by a scheduler
+// Indicates task is allocated and can be run by a scheduler
 #define SLOT_OCCUPIED 1
 
 // Task has been already initialialized by a scheduler
