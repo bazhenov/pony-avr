@@ -66,9 +66,10 @@ void __attribute__((always_inline)) restore_cpu_state(void) {
 }
 
 void __attribute__((noinline)) task_yield(void) {
-start:
   // context switch to next task
-  uint8_t next_task_id = find_next_task();
+  uint8_t next_task_id;
+start:
+  next_task_id = find_next_task();
   if (next_task_id == NO_TASK) {
     scheduller_halt();
 
