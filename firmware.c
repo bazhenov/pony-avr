@@ -10,8 +10,6 @@
 
 void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }
 
-void task_yield(void);
-
 void task_create(void (*callable)(void), uint8_t stack_size) {
   volatile task_info *task = NULL;
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
@@ -89,7 +87,7 @@ uint8_t find_next_task() {
     asm("pop r2" ::);                                                          \
   }
 
-void __attribute__((noinline)) task_yield(void) {
+void task_yield(void) {
   // context switch to next task
   uint8_t next_task_id;
 start:
@@ -148,7 +146,7 @@ void task2(void) {
   }
 }
 
-void setup_timer() {
+void init_timers() {
   // set up timer with prescaler = 1024
   TCCR0B |= (1 << CS02) | (1 << CS00);
   // initialize counter
@@ -173,7 +171,8 @@ ISR(TIMER0_OVF_vect) {
 int main(void) {
   DDRB = 0xFF;
 
-  setup_timer();
+  init_timers();
+
   task_create(&task1, 100);
   task_create(&task2, 100);
 

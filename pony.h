@@ -24,3 +24,7 @@ volatile uint8_t current_task_idx = NO_TASK;
 
 // Swaps the byte order in 2 byte integer
 #define SWAP_ORDER(x) ((x >> 8) | (x << 8))
+
+void __attribute__((noinline)) task_yield(void);
+void task_create(void (*callable)(void), uint8_t stack_size);
+void delay_ticks(uint16_t ticks);
