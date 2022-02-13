@@ -45,11 +45,6 @@ uint8_t find_next_task() {
   }
 }
 
-void scheduller_halt(void) {
-  for (;;)
-    ;
-}
-
 #define SAVE_CPU_STATE                                                         \
   {                                                                            \
     asm("push r2" ::);                                                         \
