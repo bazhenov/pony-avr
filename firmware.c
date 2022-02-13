@@ -50,47 +50,49 @@ void scheduller_halt(void) {
     ;
 }
 
-void __attribute__((always_inline)) save_cpu_state(void) {
-  asm("push r2" ::);
-  asm("push r3" ::);
-  asm("push r4" ::);
-  asm("push r5" ::);
-  asm("push r6" ::);
-  asm("push r7" ::);
-  asm("push r8" ::);
-  asm("push r9" ::);
-  asm("push r10" ::);
-  asm("push r11" ::);
-  asm("push r12" ::);
-  asm("push r13" ::);
-  asm("push r14" ::);
-  asm("push r15" ::);
-  asm("push r16" ::);
-  asm("push r17" ::);
-  asm("push r28" ::);
-  asm("push r29" ::);
-}
+#define SAVE_CPU_STATE                                                         \
+  {                                                                            \
+    asm("push r2" ::);                                                         \
+    asm("push r3" ::);                                                         \
+    asm("push r4" ::);                                                         \
+    asm("push r5" ::);                                                         \
+    asm("push r6" ::);                                                         \
+    asm("push r7" ::);                                                         \
+    asm("push r8" ::);                                                         \
+    asm("push r9" ::);                                                         \
+    asm("push r10" ::);                                                        \
+    asm("push r11" ::);                                                        \
+    asm("push r12" ::);                                                        \
+    asm("push r13" ::);                                                        \
+    asm("push r14" ::);                                                        \
+    asm("push r15" ::);                                                        \
+    asm("push r16" ::);                                                        \
+    asm("push r17" ::);                                                        \
+    asm("push r28" ::);                                                        \
+    asm("push r29" ::);                                                        \
+  }
 
-void __attribute__((always_inline)) restore_cpu_state(void) {
-  asm("pop r29" ::);
-  asm("pop r28" ::);
-  asm("pop r17" ::);
-  asm("pop r16" ::);
-  asm("pop r15" ::);
-  asm("pop r14" ::);
-  asm("pop r13" ::);
-  asm("pop r12" ::);
-  asm("pop r11" ::);
-  asm("pop r10" ::);
-  asm("pop r9" ::);
-  asm("pop r8" ::);
-  asm("pop r7" ::);
-  asm("pop r6" ::);
-  asm("pop r5" ::);
-  asm("pop r4" ::);
-  asm("pop r3" ::);
-  asm("pop r2" ::);
-}
+#define RESTORE_CPU_STATE                                                      \
+  {                                                                            \
+    asm("pop r29" ::);                                                         \
+    asm("pop r28" ::);                                                         \
+    asm("pop r17" ::);                                                         \
+    asm("pop r16" ::);                                                         \
+    asm("pop r15" ::);                                                         \
+    asm("pop r14" ::);                                                         \
+    asm("pop r13" ::);                                                         \
+    asm("pop r12" ::);                                                         \
+    asm("pop r11" ::);                                                         \
+    asm("pop r10" ::);                                                         \
+    asm("pop r9" ::);                                                          \
+    asm("pop r8" ::);                                                          \
+    asm("pop r7" ::);                                                          \
+    asm("pop r6" ::);                                                          \
+    asm("pop r5" ::);                                                          \
+    asm("pop r4" ::);                                                          \
+    asm("pop r3" ::);                                                          \
+    asm("pop r2" ::);                                                          \
+  }
 
 void __attribute__((noinline)) task_yield(void) {
   // context switch to next task
@@ -101,7 +103,7 @@ start:
   if (next_task_id != current_task_idx) {
     if (current_task_idx != NO_TASK) {
       // saving current task state
-      save_cpu_state();
+      SAVE_CPU_STATE;
       tasks[current_task_idx].sp = (void *)((SPH << 8) | SPL); // NOLINT
     }
 
@@ -125,7 +127,7 @@ start:
       goto start;
     } else {
       // Continuation of the task
-      restore_cpu_state();
+      RESTORE_CPU_STATE;
     }
   }
 }
