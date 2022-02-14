@@ -94,34 +94,35 @@ void task_yield(void) {
 start:
   next_task_id = find_next_task();
 
-  if (next_task_id != current_task_idx) {
-    if (current_task_idx != NO_TASK) {
-      // saving current task state
-      SAVE_CPU_STATE;
-      tasks[current_task_idx].sp = (void *)((SPH << 8) | SPL); // NOLINT
-    }
+  if (next_task_id == current_task_idx) {
+    return;
+  }
+  if (current_task_idx != NO_TASK) {
+    // saving current task state
+    SAVE_CPU_STATE;
+    tasks[current_task_idx].sp = (void *)((SPH << 8) | SPL); // NOLINT
+  }
 
-    // restoring next task state
-    task_info *task = &tasks[next_task_id];
-    current_task_idx = next_task_id;
+  // restoring next task state
+  task_info *task = &tasks[next_task_id];
+  current_task_idx = next_task_id;
 
-    uintptr_t stack_pointer = (uintptr_t)task->sp; // NOLINT
-    SPH = stack_pointer >> 8;
-    SPL = stack_pointer & 0xFF;
+  uintptr_t stack_pointer = (uintptr_t)task->sp; // NOLINT
+  SPH = stack_pointer >> 8;
+  SPL = stack_pointer & 0xFF;
 
-    if (task->status == 0) {
-      // Initial run ad the task
-      task->status = TASK_ACTIVE;
-      task->f();
-      // current_task_idx should be used here. Because the task we are return
-      // from may be not the same task we was delegating to
-      tasks[current_task_idx].status = 0;
-      tasks[current_task_idx].f = NULL;
-      goto start;
-    } else {
-      // Continuation of the task
-      RESTORE_CPU_STATE;
-    }
+  if (task->status == 0) {
+    // Initial run ad the task
+    task->status = TASK_ACTIVE;
+    task->f();
+    // current_task_idx should be used here. Because the task we are return
+    // from may be not the same task we was delegating to
+    tasks[current_task_idx].status = 0;
+    tasks[current_task_idx].f = NULL;
+    goto start;
+  } else {
+    // Continuation of the task
+    RESTORE_CPU_STATE;
   }
 }
 
