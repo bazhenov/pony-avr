@@ -1,14 +1,10 @@
-#include <avr/interrupt.h>
-#include <avr/io.h>
-#include <avr/sleep.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <util/delay.h>
-
 #include "pony.h"
+#include <avr/interrupt.h>
+#include <stddef.h>
 
-void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }
+void *stack_allocator = (void *)RAMEND;
+task_info tasks[MAX_TASKS];
+volatile uint8_t current_task_idx = NO_TASK;
 
 bool task_create(void (*callable)(void), uint8_t stack_size) {
   task_info *task = NULL;
@@ -133,20 +129,6 @@ void delay_ticks(uint16_t ticks) {
   task_yield();
 }
 
-void task1(void) {
-  for (;;) {
-    PORTB ^= 1 << PIN5;
-    delay_ticks(20);
-  }
-}
-
-void task2(void) {
-  for (;;) {
-    PORTB ^= 1 << PIN4;
-    delay_ticks(50);
-  }
-}
-
 void init_timers() {
   // set up timer with prescaler = 1024
   TCCR0B |= (1 << CS02) | (1 << CS00);
@@ -165,15 +147,4 @@ ISR(TIMER0_OVF_vect) {
       task->status = TASK_ACTIVE;
     }
   }
-}
-
-int main(void) {
-  DDRB = 0xFF;
-
-  init_timers();
-
-  task_create(&task1, 100);
-  task_create(&task2, 100);
-
-  task_yield();
 }

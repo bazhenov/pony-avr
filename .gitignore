@@ -1,3 +1,4 @@
-/main
-/*.elf
-/*.hex
+/test/main
+*.elf
+*.hex
+*.o
