@@ -3,7 +3,7 @@
 #include <avr/io.h>
 #include <stdbool.h>
 
-typedef struct {
+typedef volatile struct {
   // stack pointer of a task
   void *sp;
   uint8_t status;
@@ -20,7 +20,7 @@ typedef struct {
 #define NO_TASK 0xFF
 
 void *stack_allocator = (void *)RAMEND;
-volatile task_info tasks[MAX_TASKS];
+task_info tasks[MAX_TASKS];
 volatile uint8_t current_task_idx = NO_TASK;
 
 // Swaps the byte order in 2 byte integer

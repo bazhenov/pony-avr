@@ -11,7 +11,7 @@
 void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }
 
 bool task_create(void (*callable)(void), uint8_t stack_size) {
-  volatile task_info *task = NULL;
+  task_info *task = NULL;
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
     if (tasks[i].f == NULL) {
       task = &tasks[i];
@@ -36,7 +36,7 @@ uint8_t find_next_task() {
   for (;;) {
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
       uint8_t task_id = (uint8_t)(current_task_idx + 1 + i) % MAX_TASKS;
-      volatile task_info *task = &tasks[task_id];
+      task_info *task = &tasks[task_id];
       if (task->f != NULL && task->status != TASK_SLEEP) {
         return task_id;
       }
@@ -102,7 +102,7 @@ start:
     }
 
     // restoring next task state
-    volatile task_info *task = &tasks[next_task_id];
+    task_info *task = &tasks[next_task_id];
     current_task_idx = next_task_id;
 
     uintptr_t stack_pointer = (uintptr_t)task->sp; // NOLINT
@@ -126,7 +126,7 @@ start:
 }
 
 void delay_ticks(uint16_t ticks) {
-  volatile task_info *task = &tasks[current_task_idx];
+  task_info *task = &tasks[current_task_idx];
   task->ticks_to_sleep = ticks;
   task->status = TASK_SLEEP;
   task_yield();
@@ -159,7 +159,7 @@ void init_timers() {
 
 ISR(TIMER0_OVF_vect) {
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
-    volatile task_info *task = &tasks[i];
+    task_info *task = &tasks[i];
     if (task->status == TASK_SLEEP && --task->ticks_to_sleep == 0) {
       task->status = TASK_ACTIVE;
     }
