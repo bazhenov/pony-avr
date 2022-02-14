@@ -10,7 +10,7 @@
 
 void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }
 
-void task_create(void (*callable)(void), uint8_t stack_size) {
+bool task_create(void (*callable)(void), uint8_t stack_size) {
   volatile task_info *task = NULL;
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
     if (tasks[i].f == NULL) {
@@ -20,7 +20,7 @@ void task_create(void (*callable)(void), uint8_t stack_size) {
   }
 
   if (!task) {
-    return;
+    return false;
   }
 
   // Getting address of a stack
@@ -29,6 +29,7 @@ void task_create(void (*callable)(void), uint8_t stack_size) {
 
   task->sp = task_SP;
   task->f = callable;
+  return true;
 }
 
 uint8_t find_next_task() {
