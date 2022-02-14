@@ -6,7 +6,7 @@
 typedef struct {
   // stack pointer of a task
   void *sp;
-  uint8_t flags;
+  uint8_t status;
   uint16_t ticks_to_sleep;
   void (*f)(void);
 } task_info;

@@ -37,7 +37,7 @@ uint8_t find_next_task() {
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
       uint8_t task_id = (uint8_t)(current_task_idx + 1 + i) % MAX_TASKS;
       volatile task_info *task = &tasks[task_id];
-      if (task->f != NULL && task->flags != TASK_SLEEP) {
+      if (task->f != NULL && task->status != TASK_SLEEP) {
         return task_id;
       }
     }
@@ -109,14 +109,13 @@ start:
     SPH = stack_pointer >> 8;
     SPL = stack_pointer & 0xFF;
 
-    if (task->flags == 0) {
+    if (task->status == 0) {
       // Initial run ad the task
-
-      task->flags = TASK_ACTIVE;
+      task->status = TASK_ACTIVE;
       task->f();
       // current_task_idx should be used here. Because the task we are return
       // from may be not the same task we was delegating to
-      tasks[current_task_idx].flags = 0;
+      tasks[current_task_idx].status = 0;
       tasks[current_task_idx].f = NULL;
       goto start;
     } else {
@@ -129,7 +128,7 @@ start:
 void delay_ticks(uint16_t ticks) {
   volatile task_info *task = &tasks[current_task_idx];
   task->ticks_to_sleep = ticks;
-  task->flags = TASK_SLEEP;
+  task->status = TASK_SLEEP;
   task_yield();
 }
 
@@ -161,8 +160,8 @@ void init_timers() {
 ISR(TIMER0_OVF_vect) {
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
     volatile task_info *task = &tasks[i];
-    if (task->flags == TASK_SLEEP && --task->ticks_to_sleep == 0) {
-      task->flags = TASK_ACTIVE;
+    if (task->status == TASK_SLEEP && --task->ticks_to_sleep == 0) {
+      task->status = TASK_ACTIVE;
     }
   }
 }
