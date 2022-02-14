@@ -158,9 +158,7 @@ void init_timers() {
   sei();
 }
 
-uint32_t ticks = 0;
 ISR(TIMER0_OVF_vect) {
-  ticks++;
   for (uint8_t i = 0; i < MAX_TASKS; i++) {
     volatile task_info *task = &tasks[i];
     if (task->flags == TASK_SLEEP && --task->ticks_to_sleep == 0) {
