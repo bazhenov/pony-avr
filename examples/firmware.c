@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <util/delay.h>
 
-// #define MAX_TASKS 2
 #include "pony.h"
 
 void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }

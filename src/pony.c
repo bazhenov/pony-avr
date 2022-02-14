@@ -1,4 +1,5 @@
 #include "pony.h"
+
 #include <avr/interrupt.h>
 #include <stddef.h>
 
@@ -40,48 +41,48 @@ uint8_t find_next_task() {
   }
 }
 
-#define SAVE_CPU_STATE                                                         \
-  {                                                                            \
-    asm("push r2" ::);                                                         \
-    asm("push r3" ::);                                                         \
-    asm("push r4" ::);                                                         \
-    asm("push r5" ::);                                                         \
-    asm("push r6" ::);                                                         \
-    asm("push r7" ::);                                                         \
-    asm("push r8" ::);                                                         \
-    asm("push r9" ::);                                                         \
-    asm("push r10" ::);                                                        \
-    asm("push r11" ::);                                                        \
-    asm("push r12" ::);                                                        \
-    asm("push r13" ::);                                                        \
-    asm("push r14" ::);                                                        \
-    asm("push r15" ::);                                                        \
-    asm("push r16" ::);                                                        \
-    asm("push r17" ::);                                                        \
-    asm("push r28" ::);                                                        \
-    asm("push r29" ::);                                                        \
+#define SAVE_CPU_STATE  \
+  {                     \
+    asm("push r2" ::);  \
+    asm("push r3" ::);  \
+    asm("push r4" ::);  \
+    asm("push r5" ::);  \
+    asm("push r6" ::);  \
+    asm("push r7" ::);  \
+    asm("push r8" ::);  \
+    asm("push r9" ::);  \
+    asm("push r10" ::); \
+    asm("push r11" ::); \
+    asm("push r12" ::); \
+    asm("push r13" ::); \
+    asm("push r14" ::); \
+    asm("push r15" ::); \
+    asm("push r16" ::); \
+    asm("push r17" ::); \
+    asm("push r28" ::); \
+    asm("push r29" ::); \
   }
 
-#define RESTORE_CPU_STATE                                                      \
-  {                                                                            \
-    asm("pop r29" ::);                                                         \
-    asm("pop r28" ::);                                                         \
-    asm("pop r17" ::);                                                         \
-    asm("pop r16" ::);                                                         \
-    asm("pop r15" ::);                                                         \
-    asm("pop r14" ::);                                                         \
-    asm("pop r13" ::);                                                         \
-    asm("pop r12" ::);                                                         \
-    asm("pop r11" ::);                                                         \
-    asm("pop r10" ::);                                                         \
-    asm("pop r9" ::);                                                          \
-    asm("pop r8" ::);                                                          \
-    asm("pop r7" ::);                                                          \
-    asm("pop r6" ::);                                                          \
-    asm("pop r5" ::);                                                          \
-    asm("pop r4" ::);                                                          \
-    asm("pop r3" ::);                                                          \
-    asm("pop r2" ::);                                                          \
+#define RESTORE_CPU_STATE \
+  {                       \
+    asm("pop r29" ::);    \
+    asm("pop r28" ::);    \
+    asm("pop r17" ::);    \
+    asm("pop r16" ::);    \
+    asm("pop r15" ::);    \
+    asm("pop r14" ::);    \
+    asm("pop r13" ::);    \
+    asm("pop r12" ::);    \
+    asm("pop r11" ::);    \
+    asm("pop r10" ::);    \
+    asm("pop r9" ::);     \
+    asm("pop r8" ::);     \
+    asm("pop r7" ::);     \
+    asm("pop r6" ::);     \
+    asm("pop r5" ::);     \
+    asm("pop r4" ::);     \
+    asm("pop r3" ::);     \
+    asm("pop r2" ::);     \
   }
 
 void task_yield(void) {
@@ -96,14 +97,14 @@ start:
   if (current_task_idx != NO_TASK) {
     // saving current task state
     SAVE_CPU_STATE;
-    tasks[current_task_idx].sp = (void *)((SPH << 8) | SPL); // NOLINT
+    tasks[current_task_idx].sp = (void *)((SPH << 8) | SPL);  // NOLINT
   }
 
   // restoring next task state
   task_info *task = &tasks[next_task_id];
   current_task_idx = next_task_id;
 
-  uintptr_t stack_pointer = (uintptr_t)task->sp; // NOLINT
+  uintptr_t stack_pointer = (uintptr_t)task->sp;  // NOLINT
   SPH = stack_pointer >> 8;
   SPL = stack_pointer & 0xFF;
 

@@ -1,6 +1,7 @@
 {
   "C_Cpp.default.includePath": [
-    "/usr/avr/include"
+    "/usr/avr/include",
+    "./include"
   ],
   "C_Cpp.default.defines": [
     "__AVR_ATmega328P__"
