@@ -1,7 +1,7 @@
 # Pony AVR
 
-This is simple cooperative scheduler for AVR microcontrollers. At the moment is tested under ATMega328p only. But
-should be abe to work with minimal hacking under any AVR microcontroller.
+This is simple cooperative scheduler for AVR microcontrollers. At the moment is tested under ATMega328p (Arduino) only.
+But should be abe to work with minimal hacking under any AVR microcontroller.
 
 ## How to get started
 
