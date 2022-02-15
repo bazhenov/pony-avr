@@ -4,7 +4,8 @@
     "./include"
   ],
   "C_Cpp.default.defines": [
-    "__AVR_ATmega328P__"
+    "__AVR_ATmega328P__",
+    "F_CPU=16000000"
   ],
   "files.associations": {
     "TODO": "todo",
