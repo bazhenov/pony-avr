@@ -26,4 +26,5 @@ typedef volatile struct {
 void __attribute__((noinline)) task_yield(void);
 bool task_create(void (*callable)(void), uint8_t stack_size);
 void delay_ticks(uint16_t ticks);
+void delay_ms(uint16_t ms);
 void init_timers();

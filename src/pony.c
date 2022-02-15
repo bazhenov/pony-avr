@@ -3,6 +3,12 @@
 #include <avr/interrupt.h>
 #include <stddef.h>
 
+// Defines how many ticks in one ms
+//
+// Should be consistent with the prescaler logic of TIMER0 in `init_timers()`
+#define MAX(a, b) (a > b ? a : b)
+#define MS_TO_TICKS_RATIO (MAX(1, F_CPU / 1000 / 64 / 256))
+
 void *stack_allocator = (void *)RAMEND;
 task_info tasks[MAX_TASKS];
 volatile uint8_t current_task_idx = NO_TASK;
@@ -123,6 +129,10 @@ start:
   }
 }
 
+void delay_ms(uint16_t ms) {
+  delay_ticks(ms * MS_TO_TICKS_RATIO);
+}
+
 void delay_ticks(uint16_t ticks) {
   task_info *task = &tasks[current_task_idx];
   task->ticks_to_sleep = ticks;
@@ -130,9 +140,11 @@ void delay_ticks(uint16_t ticks) {
   task_yield();
 }
 
+// Setting up system timer
 void init_timers() {
-  // set up timer with prescaler = 1024
-  TCCR0B |= (1 << CS02) | (1 << CS00);
+  // set up timer with prescaler = 64
+  // when chaning this logic MS_TO_TICKS_RATIO should be updated
+  TCCR0B |= (1 << CS01) | (1 << CS00);
   // initialize counter
   TCNT0 = 0;
   // enable overflow interrupt

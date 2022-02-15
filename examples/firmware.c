@@ -13,14 +13,14 @@ void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }
 void task1(void) {
   for (;;) {
     PORTB ^= 1 << PIN5;
-    delay_ticks(20);
+    delay_ms(33);
   }
 }
 
 void task2(void) {
   for (;;) {
     PORTB ^= 1 << PIN4;
-    delay_ticks(50);
+    delay_ms(500);
   }
 }
 
