@@ -8,8 +8,6 @@
 
 #include "pony.h"
 
-void __attribute__((noinline)) toggle(uint8_t value) { PORTB = value; }
-
 void task1(void) {
   for (;;) {
     PORTB ^= 1 << PIN5;
