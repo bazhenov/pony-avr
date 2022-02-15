@@ -1,7 +1,0 @@
--I/usr/avr/include
--D__AVR_ATmega328P__
--DF_CPU=16000000
--I/usr/avr/include
--I./include
--D__AVR_ATtiny85__
--DF_CPU=16000000 -mmcu=atmega328p -O3 -Wall -Wpedantic -I./include
